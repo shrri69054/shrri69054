@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Cleaning & Visualization Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07070f;
+    --card: #0f0f1e;
+    --border: #1e1e38;
+    --accent: #e94560;
+    --green: #2dc653;
+    --purple: #7c5cbf;
+    --text: #d0d0e8;
+    --dim: #7070a0;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0f0f1e 0%, #1a0a28 50%, #0f1a2e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 40px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(233,69,96,0.08) 0%, transparent 70%);
+  }
+  .tag {
+    display: inline-block;
+    background: rgba(233,69,96,0.15);
+    border: 1px solid rgba(233,69,96,0.4);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 4px 12px;
+    border-radius: 2px;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: clamp(26px, 4vw, 42px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: white;
+    margin-bottom: 10px;
+  }
+  h1 span { color: var(--accent); }
+  .subtitle { color: var(--dim); font-size: 15px; margin-bottom: 28px; }
+  .meta-row { display: flex; gap: 24px; flex-wrap: wrap; }
+  .meta-item { font-family: var(--mono); font-size: 12px; color: var(--dim); }
+  .meta-item b { color: var(--green); }
+
+  /* Layout */
+  main { max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+  section { margin-bottom: 56px; }
+  .section-label {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 3px;
+    color: var(--accent); text-transform: uppercase; margin-bottom: 8px;
+  }
+  h2 { font-size: 22px; font-weight: 700; color: white; margin-bottom: 24px; }
+
+  /* Cards */
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .2s, transform .2s;
+  }
+  .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+  }
+  .card-num { font-family: var(--mono); font-size: 32px; font-weight: 700; color: white; }
+  .card-num.green { color: var(--green); }
+  .card-num.purple { color: var(--purple); }
+  .card-label { color: var(--dim); font-size: 12px; margin-top: 4px; }
+
+  /* Steps */
+  .steps { display: grid; gap: 12px; }
+  .step {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 16px 20px;
+    display: flex; align-items: flex-start; gap: 16px;
+  }
+  .step-num {
+    background: rgba(233,69,96,0.15);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 13px; font-weight: 700;
+    width: 32px; height: 32px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .step-title { font-weight: 600; color: white; font-size: 14px; margin-bottom: 4px; }
+  .step-desc { color: var(--dim); font-size: 13px; line-height: 1.5; }
+  code {
+    background: rgba(124,92,191,0.2);
+    color: #b89eff;
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* Dashboard image */
+  .dash-wrap {
+    background: #0d0d1a;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 4px;
+    overflow: hidden;
+  }
+  .dash-wrap img { width: 100%; border-radius: 8px; display: block; }
+
+  /* Features */
+  .feature-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .feature {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+  }
+  .feature-icon { font-size: 22px; margin-bottom: 12px; }
+  .feature-title { font-weight: 600; color: white; font-size: 14px; margin-bottom: 6px; }
+  .feature-desc { color: var(--dim); font-size: 13px; line-height: 1.5; }
+
+  /* Code block */
+  pre {
+    background: #0a0a18;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #c8d0f0;
+  }
+  .kw { color: #e94560; }
+  .fn { color: #7c5cbf; }
+  .st { color: #2dc653; }
+  .cm { color: #505070; }
+  .nb { color: #f5a623; }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    text-align: center;
+    padding: 28px;
+    color: var(--dim);
+    font-size: 13px;
+  }
+  footer b { color: var(--green); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="tag">ACADEMIC PROJECT REPORT</div>
+  <h1>Data Cleaning &amp; <span>Visualization</span></h1>
+  <p class="subtitle">Student Performance Analysis · Python · Pandas · Matplotlib · Seaborn</p>
+  <div class="meta-row">
+    <div class="meta-item">Author: <b>Shrrivathsan</b></div>
+    <div class="meta-item">Department: <b>CSE — Panimalar Engineering College</b></div>
+    <div class="meta-item">Due Date: <b>13 May 2026</b></div>
+    <div class="meta-item">Dataset: <b>Student Performance (Synthetic)</b></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- Stats -->
+  <section>
+    <div class="section-label">Overview</div>
+    <h2>Project at a Glance</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-num">312</div>
+        <div class="card-label">Raw records in dataset</div>
+      </div>
+      <div class="card">
+        <div class="card-num green">300</div>
+        <div class="card-label">Clean records after processing</div>
+      </div>
+      <div class="card">
+        <div class="card-num">12</div>
+        <div class="card-label">Duplicate rows removed</div>
+      </div>
+      <div class="card">
+        <div class="card-num purple">~146</div>
+        <div class="card-label">Missing values handled</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cleaning Steps -->
+  <section>
+    <div class="section-label">Methodology</div>
+    <h2>Data Cleaning Pipeline</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div>
+          <div class="step-title">Duplicate Removal</div>
+          <div class="step-desc">Identified and dropped <b>12 exact duplicate rows</b> using <code>df.drop_duplicates()</code>. Index reset post-removal.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div>
+          <div class="step-title">Categorical Standardization</div>
+          <div class="step-desc">Department labels like <code>'cse'</code>, <code>'ece'</code> were uppercased and validated against the master list. Internship values (<code>'yes'</code>, <code>'YES'</code>) were normalized to <code>'Yes'/'No'</code>.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div>
+          <div class="step-title">Outlier Correction</div>
+          <div class="step-desc">Age values outside [17–30] treated as outliers and set to <code>NaN</code>. CGPA values beyond [0–10] similarly nullified before imputation.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div>
+          <div class="step-title">Missing Value Imputation</div>
+          <div class="step-desc">Numerical columns (<code>math_score</code>, <code>science_score</code>, <code>cgpa</code>, <code>attendance_%</code>) imputed with their <b>median</b>. Categorical columns filled with mode or default (<code>'CSE'</code>, <code>'No'</code>).</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div>
+          <div class="step-title">Feature Engineering</div>
+          <div class="step-desc">Created <code>avg_score</code> (mean of 3 subject scores) and <code>grade</code> (A/B/C/D/F bins using <code>pd.cut()</code>) as derived analytical features.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dashboard -->
+  <section>
+    <div class="section-label">Visualization</div>
+    <h2>Analytics Dashboard (9 Charts)</h2>
+    <div class="dash-wrap">
+      <img src="dashboard.png" alt="Student Performance Dashboard">
+    </div>
+  </section>
+
+  <!-- Insights -->
+  <section>
+    <div class="section-label">Key Insights</div>
+    <h2>What the Data Tells Us</h2>
+    <div class="feature-grid">
+      <div class="feature">
+        <div class="feature-icon">📈</div>
+        <div class="feature-title">Attendance Correlates with CGPA</div>
+        <div class="feature-desc">The scatter plot shows a positive linear trend — students with >80% attendance tend to have CGPA above 7.5, validating the trendline fit.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🎓</div>
+        <div class="feature-title">Internship Boosts Performance</div>
+        <div class="feature-desc">Box plots reveal that students with internship experience score 8–12 points higher on average, showing real-world exposure has academic impact.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🏛️</div>
+        <div class="feature-title">CSE Leads in CGPA</div>
+        <div class="feature-desc">CSE and IT departments show the highest average CGPA (~7.6+), while CIVIL trails slightly — possibly due to coursework differences.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🔗</div>
+        <div class="feature-title">Scores Are Strongly Correlated</div>
+        <div class="feature-desc">Heatmap confirms high correlation (0.85+) between math, science, and avg_score — students who excel in one subject tend to excel overall.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Most Students Score Grade B</div>
+        <div class="feature-desc">Grade distribution shows a healthy bell curve — majority fall in B and C bands, with fewer F-grade students after outlier correction.</div>
+      </div>
+      <div class="feature">
+        <div class="feature-icon">🧹</div>
+        <div class="feature-title">Dirty Data Was Significant</div>
+        <div class="feature-desc">~15% of records had at least one issue (duplicates, nulls, or outliers). Cleaning was essential before any reliable analysis could be performed.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Code Snippet -->
+  <section>
+    <div class="section-label">Code Sample</div>
+    <h2>Core Cleaning Logic</h2>
+<pre><span class="cm"># Standardize + Validate Department Labels</span>
+df[<span class="st">'department'</span>] = df[<span class="st">'department'</span>].<span class="fn">str.upper</span>().<span class="fn">str.strip</span>()
+df[<span class="st">'department'</span>] = df[<span class="st">'department'</span>].<span class="fn">apply</span>(
+    <span class="kw">lambda</span> x: x <span class="kw">if</span> x <span class="kw">in</span> departments <span class="kw">else</span> <span class="nb">np.nan</span>
+)
+
+<span class="cm"># Remove age outliers (valid range: 17–30)</span>
+df[<span class="st">'age'</span>] = df[<span class="st">'age'</span>].<span class="fn">apply</span>(<span class="kw">lambda</span> x: <span class="nb">np.nan</span> <span class="kw">if</span> x &lt; <span class="nb">17</span> <span class="kw">or</span> x &gt; <span class="nb">30</span> <span class="kw">else</span> x)
+
+<span class="cm"># Median imputation for numeric columns</span>
+<span class="kw">for</span> col <span class="kw">in</span> [<span class="st">'math_score'</span>, <span class="st">'science_score'</span>, <span class="st">'cgpa'</span>, <span class="st">'attendance_%'</span>]:
+    df[col].<span class="fn">fillna</span>(df[col].<span class="fn">median</span>(), inplace=<span class="kw">True</span>)
+
+<span class="cm"># Feature Engineering</span>
+df[<span class="st">'avg_score'</span>] = df[[<span class="st">'math_score'</span>, <span class="st">'science_score'</span>, <span class="st">'english_score'</span>]].<span class="fn">mean</span>(axis=<span class="nb">1</span>)
+df[<span class="st">'grade'</span>] = <span class="fn">pd.cut</span>(df[<span class="st">'avg_score'</span>],
+    bins=[<span class="nb">0, 40, 55, 70, 85, 100</span>],
+    labels=[<span class="st">'F', 'D', 'C', 'B', 'A'</span>])</pre>
+  </section>
+
+  <!-- Libraries -->
+  <section>
+    <div class="section-label">Tools Used</div>
+    <h2>Python Libraries</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-num" style="font-size:20px;color:#f5a623">Pandas</div>
+        <div class="card-label">Data loading, cleaning, manipulation & groupby aggregations</div>
+      </div>
+      <div class="card">
+        <div class="card-num" style="font-size:20px;color:#4fc3f7">NumPy</div>
+        <div class="card-label">Array operations, outlier handling, polyfit trendlines</div>
+      </div>
+      <div class="card">
+        <div class="card-num" style="font-size:20px;color:var(--accent)">Matplotlib</div>
+        <div class="card-label">Figure/subplot layout, bar charts, scatter, pie/donut charts</div>
+      </div>
+      <div class="card">
+        <div class="card-num" style="font-size:20px;color:var(--green)">Seaborn</div>
+        <div class="card-label">KDE plots, box plots, heatmaps with styled themes</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Submitted by <b>Shrrivathsan</b> · Panimalar Engineering College · CSE Dept · Due <b>13 May 2026</b>
+</footer>
+
+</body>
+</html>
