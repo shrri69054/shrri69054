@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Predictive Modeling Report</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #07070f;
+  --card:   #0d0d1b;
+  --card2:  #111122;
+  --border: #1a1a30;
+  --acc:    #e94560;
+  --grn:    #2dc653;
+  --prp:    #7c5cbf;
+  --blu:    #4fc3f7;
+  --org:    #f5a623;
+  --txt:    #c8cce8;
+  --dim:    #606080;
+  --mono:   'IBM Plex Mono', monospace;
+  --sans:   'Outfit', sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);line-height:1.6;}
+
+/* ── HERO ── */
+header{
+  background: linear-gradient(160deg,#0a0a18 0%,#110820 45%,#081520 100%);
+  border-bottom:1px solid var(--border);
+  padding:60px 44px 48px;
+  position:relative;overflow:hidden;
+}
+header::after{
+  content:'';position:absolute;top:-60px;right:-60px;
+  width:420px;height:420px;border-radius:50%;
+  background:radial-gradient(circle,rgba(124,92,191,.14) 0%,transparent 70%);
+  pointer-events:none;
+}
+.chip{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(124,92,191,.15);border:1px solid rgba(124,92,191,.35);
+  color:var(--prp);font-family:var(--mono);font-size:11px;letter-spacing:2px;
+  padding:5px 14px;border-radius:3px;margin-bottom:22px;
+}
+.chip::before{content:'◈';font-size:13px;}
+h1{font-size:clamp(28px,4.5vw,48px);font-weight:800;color:#fff;line-height:1.15;margin-bottom:12px;}
+h1 em{font-style:normal;color:var(--acc);}
+.sub{color:var(--dim);font-size:15px;max-width:520px;margin-bottom:32px;}
+.meta{display:flex;flex-wrap:wrap;gap:20px;}
+.meta-item{font-family:var(--mono);font-size:12px;color:var(--dim);}
+.meta-item b{color:var(--grn);}
+
+/* ── MAIN LAYOUT ── */
+main{max-width:1080px;margin:0 auto;padding:52px 24px;}
+section{margin-bottom:60px;}
+.sec-eyebrow{font-family:var(--mono);font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--acc);margin-bottom:8px;}
+h2{font-size:22px;font-weight:700;color:#fff;margin-bottom:24px;}
+h3{font-size:16px;font-weight:600;color:#fff;margin-bottom:12px;}
+
+/* ── STAT ROW ── */
+.stat-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;}
+.stat{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:22px 20px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s,transform .2s;
+}
+.stat:hover{border-color:var(--prp);transform:translateY(-2px);}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--acc),var(--prp));}
+.stat-val{font-family:var(--mono);font-size:30px;font-weight:700;color:#fff;}
+.stat-val.g{color:var(--grn);}
+.stat-val.p{color:var(--prp);}
+.stat-val.b{color:var(--blu);}
+.stat-lbl{font-size:12px;color:var(--dim);margin-top:4px;}
+
+/* ── MODEL CARDS ── */
+.model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;}
+.mcard{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:24px;
+  transition:border-color .2s;
+}
+.mcard.best{border-color:var(--grn);}
+.mcard-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.mcard-name{font-weight:700;font-size:15px;color:#fff;}
+.badge{font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:3px;letter-spacing:1px;}
+.badge.best{background:rgba(45,198,83,.15);color:var(--grn);border:1px solid rgba(45,198,83,.3);}
+.badge.lr{background:rgba(79,195,247,.12);color:var(--blu);border:1px solid rgba(79,195,247,.25);}
+.badge.dt{background:rgba(245,166,35,.12);color:var(--org);border:1px solid rgba(245,166,35,.25);}
+.badge.rf{background:rgba(45,198,83,.12);color:var(--grn);border:1px solid rgba(45,198,83,.25);}
+.metric-row{display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid var(--border);}
+.metric-row:last-child{border-bottom:none;}
+.metric-key{font-size:13px;color:var(--dim);}
+.metric-val{font-family:var(--mono);font-size:13px;font-weight:600;color:#fff;}
+.metric-val.hi{color:var(--grn);}
+.bar-wrap{height:4px;background:#1a1a30;border-radius:2px;margin-top:4px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:2px;transition:width .6s ease;}
+
+/* ── PIPELINE ── */
+.pipeline{display:flex;flex-wrap:wrap;gap:0;position:relative;}
+.pipe-step{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:8px;padding:18px 20px;flex:1;min-width:160px;
+  position:relative;
+}
+.pipe-step::after{
+  content:'→';position:absolute;right:-14px;top:50%;transform:translateY(-50%);
+  color:var(--prp);font-size:18px;font-weight:700;z-index:2;
+}
+.pipe-step:last-child::after{display:none;}
+.pipe-num{font-family:var(--mono);font-size:11px;color:var(--prp);margin-bottom:6px;}
+.pipe-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:4px;}
+.pipe-desc{font-size:11px;color:var(--dim);line-height:1.5;}
+
+/* ── DASHBOARD IMAGE ── */
+.dash-frame{
+  background:#0a0a18;border:1px solid var(--border);
+  border-radius:12px;padding:6px;overflow:hidden;
+}
+.dash-frame img{width:100%;border-radius:8px;display:block;}
+
+/* ── COMPARISON TABLE ── */
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead tr{background:rgba(124,92,191,.12);}
+th{padding:12px 16px;text-align:left;font-family:var(--mono);font-size:11px;
+   letter-spacing:1px;color:var(--prp);border-bottom:1px solid var(--border);}
+td{padding:11px 16px;border-bottom:1px solid #12122a;color:var(--txt);}
+tbody tr:hover{background:rgba(255,255,255,.025);}
+tbody tr.best-row td{color:var(--grn);font-weight:600;}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:8px;vertical-align:middle;}
+
+/* ── CODE ── */
+pre{
+  background:#050510;border:1px solid var(--border);
+  border-radius:10px;padding:26px;overflow-x:auto;
+  font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#b0bce0;
+}
+.kw{color:#e94560;} .fn{color:#7c5cbf;} .st{color:#2dc653;}
+.cm{color:#404060;} .nb{color:#f5a623;} .cls{color:#4fc3f7;}
+
+/* ── INSIGHTS ── */
+.insight-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;}
+.insight{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:20px;}
+.insight-icon{font-size:24px;margin-bottom:10px;}
+.insight-title{font-weight:700;color:#fff;font-size:14px;margin-bottom:6px;}
+.insight-body{font-size:13px;color:var(--dim);line-height:1.55;}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);text-align:center;
+  padding:28px;font-size:13px;color:var(--dim);}
+footer b{color:var(--grn);}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="chip">MACHINE LEARNING PROJECT REPORT</div>
+  <h1>Predictive Modeling<br>with <em>Machine Learning</em></h1>
+  <p class="sub">Binary classification of student placement outcomes using Logistic Regression, Decision Tree, and Random Forest — with full evaluation suite.</p>
+  <div class="meta">
+    <div class="meta-item">Author: <b>Shrrivathsan</b></div>
+    <div class="meta-item">College: <b>Panimalar Engineering College</b></div>
+    <div class="meta-item">Due: <b>20 May 2026</b></div>
+    <div class="meta-item">Problem: <b>Supervised Classification</b></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- Stats -->
+  <section>
+    <div class="sec-eyebrow">Overview</div>
+    <h2>Project Snapshot</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-val b">800</div><div class="stat-lbl">Total student records</div></div>
+      <div class="stat"><div class="stat-val">7</div><div class="stat-lbl">Input features</div></div>
+      <div class="stat"><div class="stat-val g">68.8%</div><div class="stat-lbl">Overall placement rate</div></div>
+      <div class="stat"><div class="stat-val p">3</div><div class="stat-lbl">ML algorithms compared</div></div>
+      <div class="stat"><div class="stat-val g">89.4%</div><div class="stat-lbl">Best model accuracy</div></div>
+      <div class="stat"><div class="stat-val">5-fold</div><div class="stat-lbl">Cross-validation applied</div></div>
+    </div>
+  </section>
+
+  <!-- Pipeline -->
+  <section>
+    <div class="sec-eyebrow">Methodology</div>
+    <h2>ML Pipeline</h2>
+    <div class="pipeline" style="gap:18px;">
+      <div class="pipe-step">
+        <div class="pipe-num">STEP 01</div>
+        <div class="pipe-title">Data Generation</div>
+        <div class="pipe-desc">800 synthetic student records with realistic placement logic based on CGPA, IQ, internship, projects, backlogs & communication.</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">STEP 02</div>
+        <div class="pipe-title">Preprocessing</div>
+        <div class="pipe-desc">Label encoding for department. StandardScaler applied for Logistic Regression. Stratified 80/20 train-test split.</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">STEP 03</div>
+        <div class="pipe-title">Model Training</div>
+        <div class="pipe-desc">Three classifiers trained: Logistic Regression, Decision Tree (depth=6), Random Forest (150 trees, depth=8).</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">STEP 04</div>
+        <div class="pipe-title">Evaluation</div>
+        <div class="pipe-desc">Accuracy, Precision, Recall, F1-Score, Confusion Matrix, ROC-AUC, and 5-Fold Cross-Validation scores computed.</div>
+      </div>
+      <div class="pipe-step">
+        <div class="pipe-num">STEP 05</div>
+        <div class="pipe-title">Visualization</div>
+        <div class="pipe-desc">9-panel dashboard: metric bars, confusion matrices, ROC curves, feature importance, CGPA distribution, and model summary.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Model Results -->
+  <section>
+    <div class="sec-eyebrow">Results</div>
+    <h2>Model Performance</h2>
+    <div class="model-grid">
+
+      <div class="mcard best">
+        <div class="mcard-head">
+          <div class="mcard-name">Logistic Regression</div>
+          <span class="badge best">★ BEST</span>
+        </div>
+        <div class="metric-row"><span class="metric-key">Accuracy</span><span class="metric-val hi">89.38%</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:89.38%;background:var(--grn);"></div></div>
+        <div class="metric-row"><span class="metric-key">Precision</span><span class="metric-val hi">93.46%</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:93.46%;background:var(--grn);"></div></div>
+        <div class="metric-row"><span class="metric-key">Recall</span><span class="metric-val hi">90.91%</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:90.91%;background:var(--grn);"></div></div>
+        <div class="metric-row"><span class="metric-key">F1-Score</span><span class="metric-val hi">92.17%</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:92.17%;background:var(--grn);"></div></div>
+        <div class="metric-row"><span class="metric-key">CV Accuracy</span><span class="metric-val">88.28% ± 2.32%</span></div>
+      </div>
+
+      <div class="mcard">
+        <div class="mcard-head">
+          <div class="mcard-name">Decision Tree</div>
+          <span class="badge dt">DEPTH = 6</span>
+        </div>
+        <div class="metric-row"><span class="metric-key">Accuracy</span><span class="metric-val">80.00%</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:80%;background:var(--org);"></div></div>
+        <div class="metric-row"><span class="metric-key">Precision</span><span class="metric-val">86.11%</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:86.11%;background:var(--org);"></div></div>
+        <div class="metric-row"><span class="metric-key">Recall</span><span class="metric-val">84.55%</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:84.55%;background:var(--org);"></div></div>
+        <div class="metric-row"><span class="metric-key">F1-Score</span><span class="metric-val">85.32%</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:85.32%;background:var(--org);"></div></div>
+        <div class="metric-row"><span class="metric-key">CV Accuracy</span><span class="metric-val">79.69% ± 4.22%</span></div>
+      </div>
+
+      <div class="mcard">
+        <div class="mcard-head">
+          <div class="mcard-name">Random Forest</div>
+          <span class="badge rf">150 TREES</span>
+        </div>
+        <div class="metric-row"><span class="metric-key">Accuracy</span><span class="metric-val">85.62%</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:85.62%;background:var(--grn);opacity:.7"></div></div>
+        <div class="metric-row"><span class="metric-key">Precision</span><span class="metric-val">86.55%</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:86.55%;background:var(--grn);opacity:.7"></div></div>
+        <div class="metric-row"><span class="metric-key">Recall</span><span class="metric-val">93.64%</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:93.64%;background:var(--grn);opacity:.7"></div></div>
+        <div class="metric-row"><span class="metric-key">F1-Score</span><span class="metric-val">89.96%</span></div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:89.96%;background:var(--grn);opacity:.7"></div></div>
+        <div class="metric-row"><span class="metric-key">CV Accuracy</span><span class="metric-val">86.25% ± 3.03%</span></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Comparison Table -->
+  <section>
+    <div class="sec-eyebrow">Comparison</div>
+    <h2>Side-by-Side Evaluation</h2>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+    <table>
+      <thead>
+        <tr>
+          <th>MODEL</th><th>ACCURACY</th><th>PRECISION</th><th>RECALL</th><th>F1-SCORE</th><th>CV-ACC</th><th>NOTES</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="best-row">
+          <td><span class="dot" style="background:var(--grn)"></span>Logistic Regression</td>
+          <td>89.38%</td><td>93.46%</td><td>90.91%</td><td>92.17%</td><td>88.28%</td>
+          <td>Best overall, stable CV</td>
+        </tr>
+        <tr>
+          <td><span class="dot" style="background:var(--org)"></span>Decision Tree</td>
+          <td>80.00%</td><td>86.11%</td><td>84.55%</td><td>85.32%</td><td>79.69%</td>
+          <td>Interpretable, higher variance</td>
+        </tr>
+        <tr>
+          <td><span class="dot" style="background:#4fc3f7"></span>Random Forest</td>
+          <td>85.62%</td><td>86.55%</td><td>93.64%</td><td>89.96%</td><td>86.25%</td>
+          <td>Highest recall, robust ensemble</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- Dashboard -->
+  <section>
+    <div class="sec-eyebrow">Visualization</div>
+    <h2>Analytics Dashboard (9 Panels)</h2>
+    <div class="dash-frame">
+      <img src="ml_dashboard.png" alt="ML Dashboard">
+    </div>
+    <p style="font-size:12px;color:var(--dim);margin-top:10px;font-family:var(--mono);">
+      Row 1: Metric comparison bars &nbsp;|&nbsp; Row 2: Confusion matrices × 3 &nbsp;|&nbsp;
+      Row 3: ROC curves + CV bars &nbsp;|&nbsp; Row 4: Feature importance + CGPA dist. + summary
+    </p>
+  </section>
+
+  <!-- Code -->
+  <section>
+    <div class="sec-eyebrow">Code Sample</div>
+    <h2>Core ML Implementation</h2>
+<pre><span class="cm"># Train & Evaluate All Three Models</span>
+models = {
+    <span class="st">'Logistic Regression'</span>: <span class="cls">LogisticRegression</span>(max_iter=<span class="nb">500</span>),
+    <span class="st">'Decision Tree'</span>      : <span class="cls">DecisionTreeClassifier</span>(max_depth=<span class="nb">6</span>),
+    <span class="st">'Random Forest'</span>      : <span class="cls">RandomForestClassifier</span>(n_estimators=<span class="nb">150</span>),
+}
+
+<span class="kw">for</span> name, model <span class="kw">in</span> models.items():
+    model.<span class="fn">fit</span>(X_train, y_train)
+    y_pred = model.<span class="fn">predict</span>(X_test)
+    y_prob = model.<span class="fn">predict_proba</span>(X_test)[:, <span class="nb">1</span>]
+
+    <span class="cm"># Metrics</span>
+    acc = <span class="fn">accuracy_score</span>(y_test, y_pred)
+    f1  = <span class="fn">f1_score</span>(y_test, y_pred)
+    cv  = <span class="fn">cross_val_score</span>(model, X_train, y_train, cv=<span class="nb">5</span>)
+
+    <span class="cm"># ROC Curve</span>
+    fpr, tpr, _ = <span class="fn">roc_curve</span>(y_test, y_prob)
+    roc_auc     = <span class="fn">auc</span>(fpr, tpr)
+
+    <span class="cm"># Confusion Matrix</span>
+    cm = <span class="fn">confusion_matrix</span>(y_test, y_pred)</pre>
+  </section>
+
+  <!-- Insights -->
+  <section>
+    <div class="sec-eyebrow">Analysis</div>
+    <h2>Key Findings</h2>
+    <div class="insight-grid">
+      <div class="insight">
+        <div class="insight-icon">🏆</div>
+        <div class="insight-title">Logistic Regression Wins</div>
+        <div class="insight-body">Despite being the simplest model, LR achieved the best F1 (92.17%) and accuracy (89.38%), confirming the data has linearly separable patterns.</div>
+      </div>
+      <div class="insight">
+        <div class="insight-icon">🌲</div>
+        <div class="insight-title">Random Forest Best Recall</div>
+        <div class="insight-body">RF achieved 93.64% recall — ideal when the cost of missing a placed student is high. Ensemble averaging reduces individual tree variance.</div>
+      </div>
+      <div class="insight">
+        <div class="insight-icon">📐</div>
+        <div class="insight-title">CGPA is Top Feature</div>
+        <div class="insight-body">Random Forest feature importance ranks CGPA and IQ as the top predictors. A 0.5 CGPA increase correlates with ~12% higher placement probability.</div>
+      </div>
+      <div class="insight">
+        <div class="insight-icon">🔄</div>
+        <div class="insight-title">CV Confirms Stability</div>
+        <div class="insight-body">LR's CV accuracy of 88.28% ± 2.32% is the most stable across folds. Decision Tree showed the highest variance (±4.22%), indicating overfitting risk.</div>
+      </div>
+      <div class="insight">
+        <div class="insight-icon">📈</div>
+        <div class="insight-title">ROC-AUC All Above 0.93</div>
+        <div class="insight-body">All three models showed AUC > 0.93, confirming excellent discriminative ability between placed and non-placed students across thresholds.</div>
+      </div>
+      <div class="insight">
+        <div class="insight-icon">🎯</div>
+        <div class="insight-title">Internship Matters</div>
+        <div class="insight-body">Internship experience was the 3rd most impactful feature. Students with internships had a placement probability ~20% higher on average.</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+<footer>Submitted by <b>Shrrivathsan</b> · Panimalar Engineering College · CSE · Due <b>20 May 2026</b></footer>
+</body>
+</html>
